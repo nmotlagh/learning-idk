@@ -7,7 +7,6 @@ name = "learning-idk"
 version = "3.0.0"
 description = "Learning When to Say 'I Don't Know' — per-class reject-option thresholds for neural classifiers"
 readme = "README.md"
-license = "MIT"
 requires-python = ">=3.10"
 authors = [
     { name = "Nicholas Kashani Motlagh", email = "kashanimotlagh.1@osu.edu" },
@@ -18,7 +17,6 @@ authors = [
 keywords = ["reject-option", "classification", "calibration", "temperature-scaling", "uncertainty"]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [

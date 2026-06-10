@@ -1,7 +1,6 @@
 # Learning When to Say "I Don't Know"
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![arXiv](https://img.shields.io/badge/arXiv-2209.04944-b31b1b.svg)](https://arxiv.org/abs/2209.04944)
 
 Official code for ["Learning When to Say 'I Don't Know'"](https://arxiv.org/abs/2209.04944) by Nicholas Kashani Motlagh, [Jim Davis](http://web.cse.ohio-state.edu/~davis.1719/), Tim Anderson, and Jeremy Gwinnup (ISVC 2022).
@@ -129,7 +128,6 @@ learning-idk/
 ├── tests/                 # pytest suite
 ├── synth_logits/          # example synthetic data
 ├── pyproject.toml
-├── LICENSE
 └── README.md
 ```
 

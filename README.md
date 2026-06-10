@@ -1,74 +1,146 @@
-# Learning When to Say "I Don't know"
+# Learning When to Say "I Don't Know"
 
-This repo contains the official code for the paper ["Learning When to Say "I Don't Know""](https://arxiv.org/abs/2209.04944) by Nicholas Kashani Motlagh, [Jim Davis](http://web.cse.ohio-state.edu/~davis.1719/), Tim Anderson, and Jeremy Gwinnup, which was accepted to the International Symposium on Visual Computing (ISVC) 2022.
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![arXiv](https://img.shields.io/badge/arXiv-2209.04944-b31b1b.svg)](https://arxiv.org/abs/2209.04944)
 
-We propose a new Reject Option Classification technique to identify and remove regions of uncertainty in the decision space for a given neural classifier and dataset. Such existing formulations employ a learned rejection (remove)/selection (keep) function and require either a known cost for rejecting examples or strong constraints on the accuracy or coverage of the selected examples. We consider an alternative formulation by instead analyzing the complementary reject region and employing a validation set to learn per-class softmax thresholds. The goal is to maximize the accuracy of the selected examples subject to a natural randomness allowance on the rejected examples (rejecting more incorrect than correct predictions). This repo contains code used to compute per-class thresholds given precomputed validation logits and targets from a pretrained model.
+Official code for ["Learning When to Say 'I Don't Know'"](https://arxiv.org/abs/2209.04944) by Nicholas Kashani Motlagh, [Jim Davis](http://web.cse.ohio-state.edu/~davis.1719/), Tim Anderson, and Jeremy Gwinnup (ISVC 2022).
 
-## Overview 
+> The exact code used in the paper is preserved at the [`v1.0.0`](https://github.com/osu-cvl/learning-idk/tree/v1.0.0) tag.
 
-The contents of this repo are organized as follows:
-* [threshold.py](threshold.py): a sample script for determining per-class thresholds using the proposed approach.
-* [synth_logits/](synth_logits/): a directory of logits extracted from small trained neural networks.
-* [temperature_scaling.py](temperature_scaling.py): a class that implements temperature scaling (taken from [another repo](https://github.com/osu-cvl/calibration/tree/main/temperature_scaling)).
+We propose a Reject Option Classification technique to identify and remove regions of uncertainty in the decision space for a given neural classifier and dataset. Rather than learning a rejection/selection function with a known rejection cost or strong accuracy/coverage constraints, we analyze the complementary reject region and employ a validation set to learn per-class softmax thresholds. The goal is to maximize the accuracy of the selected examples subject to a natural randomness allowance on the rejected examples (rejecting more incorrect than correct predictions).
 
-## Main Requirements
-* Matplotlib
-* NumPy
-* PyTorch
-* SciPy
-* statsmodels
+## What's New in 3.0.0
 
-with specific versions given in [requirements.txt](requirements.txt). To reproduce the environment using conda run ```conda create -c conda-forge -c pytorch -n <environment-name> --file requirements.txt```.
+`3.0.0` is a cleanup and correctness release focused on making the package easier to use safely.
 
-## Learning Thresholds
+### Key changes
 
-An example command to run our thresholding algorithm is:
+- Strict CLI/input validation for `--data_path`, `--delta`, and `--thresh_func`.
+- Per-class threshold count now follows the logits dimension (`logits.shape[1]`) instead of observed labels.
+- Per-class temperature scaling now uses a deterministic 1D temperature vector by predicted class.
+- Safer tensor loading across PyTorch versions (`weights_only` fallback + CPU map location).
+- Added automated quality gates: `ruff` linting, `pytest` tests, and CI.
 
+### Migration notes from 2.x
+
+- If your labels omit classes that still exist in the logits head, output thresholds now include those classes.
+- Invalid CLI values that were previously accepted may now fail fast with explicit error messages.
+- Internal calibration temperature tensor shapes are now normalized (relevant if you use internal attributes directly).
+
+## Installation
+
+```bash
+pip install -e .
 ```
-python threshold.py \
+
+Or with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv pip install -e .
+```
+
+For development (tests + lint):
+
+```bash
+pip install -e ".[dev]"
+ruff check .
+pytest
+```
+
+### Requirements
+
+- Python >= 3.10
+- PyTorch, NumPy, SciPy, statsmodels, Matplotlib
+
+All dependencies are declared in `pyproject.toml` and installed automatically.
+
+## Usage
+
+### Learning thresholds
+
+```bash
+python -m learning_idk \
     --data_path <path to validation logits file> \
     --test_data_path <path to test logits (optional)> \
     --delta .05 \
-    --thresh_func 'b_cdf'
+    --thresh_func b_cdf
 ```
 
-where 
+Or using the installed console script:
 
-* ```data_path``` is the path to validation logits extracted from a pretrained network. These logits will be used to learn per-class thresholds.
-
-The above command-line argument is the only required one to run our algorithm. The following argumenst are optional.
-
-* ```delta``` is the user-defined significance level used in the BinomialCDF algorithm. The default is ```0.05```.
-* ```thresh_func``` is the method used to check the viability of the reject region. It must be one of (b_cdf, wilson, wilson_cc, clopper-pearson, agresti_coull). The default is ```b_cdf```.
-* ```test_data_path``` is the path to test logits extracted from a pretrained network. These logits will be used to evaluate per-class thresholds. The default is ```None```.
-* ```threshold_path``` is the path to save the tensor of thresholds. The default is ```thresholds.pt```.
-* ```synth``` is a boolean flag indicating that data_path contains synthetic data (formatted slightly differently). The default is ```False```.
-* ```skip_ts``` is a boolean flag that specifies whether to skip temperature scaling before learning thresholds. The default is ```False```.
-
-## Synthetic Data
-
-You can run the algorithm on synthetic data using 
-
-```
-python threshold.py \
-    --data_path synth_logits/val_logits_v<#>.pt \
-    --test_data_path synth_logits/test_logits_v<#>.pt \
+```bash
+learning-idk \
+    --data_path <path to validation logits file> \
     --delta .05 \
-    --thresh_func 'b_cdf'
+    --thresh_func b_cdf
+```
+
+#### Arguments
+
+| Argument | Description | Default |
+|---|---|---|
+| `--data_path` | Path to validation logits (required) | — |
+| `--test_data_path` | Path to test logits | `None` |
+| `--delta` | Significance level for the BinomialCDF algorithm | `0.05` |
+| `--thresh_func` | Method to check reject region viability (`b_cdf`, `wilson`, `wilson_cc`, `clopper_pearson`, `agresti_coull`) | `b_cdf` |
+| `--threshold_path` | Path to save the threshold tensor | `thresholds.pt` |
+| `--synth` | Flag indicating synthetic data format | `False` |
+| `--skip_ts` | Skip temperature scaling | `False` |
+
+### Synthetic data
+
+```bash
+python -m learning_idk \
+    --data_path synth_logits/val_logits_v1.pt \
+    --test_data_path synth_logits/test_logits_v1.pt \
+    --delta .05 \
+    --thresh_func b_cdf \
     --synth
 ```
 
-where <#> corresponds to the number in the paper (1-8). Remember to set the ```--synth``` flag.
+Synthetic logit files (`v1`–`v8`) are included in `synth_logits/`.
+
+### As a library
+
+```python
+from learning_idk import learn_thresholds, evaluate, load_data, ModelWithTemperature
+
+logits, targets = load_data("synth_logits/val_logits_v1.pt", synth=True)
+thresholds = learn_thresholds(logits, targets, delta=0.05, thresh_func="b_cdf")
+evaluate(logits, targets, thresholds)
+```
+
+### Calibration
+
+The `calibration` module provides temperature scaling and ECE computation. For a more comprehensive calibration library, see [`netcal`](https://github.com/fabiankueppers/calibration-framework).
+
+## Project structure
+
+```
+learning-idk/
+├── .github/workflows/ci.yml
+├── src/learning_idk/
+│   ├── __init__.py
+│   ├── __main__.py        # python -m learning_idk entrypoint
+│   ├── threshold.py       # core thresholding algorithm
+│   ├── calibration.py     # temperature scaling + ECE
+│   └── data.py            # LogitDataset, data loaders
+├── tests/                 # pytest suite
+├── synth_logits/          # example synthetic data
+├── pyproject.toml
+├── LICENSE
+└── README.md
+```
 
 ## Citation
 
-Please cite our paper "Learning When to Say 'I Don't Know'" with
-
-```
-@article{KashaniMotlagh2022,
-  title={Learning When to Say "I Don't Know"},
-  author={Kashani Motlagh, Nicholas, Davis, Jim, Anderson, Tim, and Gwinnup, Jeremy},
-  journal={International Symposium on Visual Computing},
-  year={2022}
+```bibtex
+@inproceedings{KashaniMotlagh2022,
+    title     = {Learning When to Say ``{I} Don't Know''},
+    author    = {Kashani Motlagh, Nicholas and Davis, Jim and Anderson, Tim and Gwinnup, Jeremy},
+    booktitle = {International Symposium on Visual Computing (ISVC)},
+    year      = {2022},
+    url       = {https://arxiv.org/abs/2209.04944}
 }
 ```

@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+*.whl
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Outputs
+thresholds.pt
+.pytest_cache/
+.ruff_cache/
+
+# Keep synth_logits/*.pt tracked (example data)
+!synth_logits/*.pt

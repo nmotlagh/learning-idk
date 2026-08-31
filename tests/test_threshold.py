@@ -71,3 +71,18 @@ def test_evaluate_raises_for_short_threshold_vector() -> None:
     thresholds = torch.tensor([0.5, 0.5], dtype=torch.float32)
     with pytest.raises(ValueError, match="fewer entries than model classes"):
         evaluate(logits, targets, thresholds)
+
+
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+def test_learn_thresholds_keeps_coverage_when_accuracy_ties(dtype, capsys) -> None:
+    # Both confidence groups are 75% accurate; rejecting one cannot improve accuracy.
+    logits = torch.tensor([[0.6, 0.4]] * 4 + [[0.9, 0.1]] * 4, dtype=dtype).log()
+    targets = torch.tensor([0, 0, 0, 1, 0, 0, 0, 1])
+
+    thresholds = learn_thresholds(logits, targets)
+
+    torch.testing.assert_close(thresholds, torch.zeros(2, dtype=dtype))
+    evaluate(logits, targets, thresholds)
+    output = capsys.readouterr().out
+    assert "Select Accuracy: 75.0" in output
+    assert "Coverage: 100.0" in output

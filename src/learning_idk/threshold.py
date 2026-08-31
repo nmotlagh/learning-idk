@@ -271,7 +271,7 @@ def learn_class_threshold(
         return 0.0
     possible_thresholds = torch.unique(max_sms[incorrect_idx])
     best_thresh = torch.tensor(0.0, dtype=max_sms.dtype, device=max_sms.device)
-    best_cov = -1.0
+    best_cov = 1.0
     best_sacc = accuracy(preds == targets)
     for thresh in possible_thresholds:
         select_idx = torch.where(max_sms > thresh)[0]

@@ -110,6 +110,10 @@ thresholds = learn_thresholds(logits, targets, delta=0.05, thresh_func="b_cdf")
 evaluate(logits, targets, thresholds)
 ```
 
+### Modern backbones
+
+[`examples/modern-backbones/`](examples/modern-backbones/) runs the method on CIFAR-100 logits from frozen DINOv2, DINOv3, and SigLIP 2 backbones with linear probes: logit generation, a fast NumPy B-CDF with parity tests against this package, and the data export for the interactive demo on nmotlagh.github.io. It is a self-contained uv project.
+
 ### Calibration
 
 The `calibration` module provides temperature scaling and ECE computation. For a more comprehensive calibration library, see [`netcal`](https://github.com/fabiankueppers/calibration-framework).
@@ -126,6 +130,8 @@ learning-idk/
 │   ├── calibration.py     # temperature scaling + ECE
 │   └── data.py            # LogitDataset, data loaders
 ├── tests/                 # pytest suite
+├── examples/
+│   └── modern-backbones/  # CIFAR-100 rerun on modern frozen backbones
 ├── synth_logits/          # example synthetic data
 ├── pyproject.toml
 └── README.md

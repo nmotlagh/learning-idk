@@ -1,0 +1,41 @@
+[project]
+name = "learning-idk-modern-backbones"
+version = "0.1.0"
+description = "B-CDF reject thresholds on CIFAR-100 logits from modern frozen backbones"
+requires-python = ">=3.10"
+dependencies = [
+    "learning-idk",
+    "torch",
+    "torchvision",
+    "timm",
+    "numpy",
+    "scipy",
+    "pyarrow",
+    "huggingface-hub",
+    "pillow",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+learning-idk = { path = "../..", editable = true }
+torch = [{ index = "pytorch-cu128", marker = "sys_platform == 'linux' or sys_platform == 'win32'" }]
+torchvision = [{ index = "pytorch-cu128", marker = "sys_platform == 'linux' or sys_platform == 'win32'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[tool.ruff]
+extend = "../../pyproject.toml"
+
+[tool.ruff.lint.isort]
+known-local-folder = ["fast_bcdf", "make_logits"]
